@@ -1,17 +1,36 @@
-import { BrowserRouter, NavLink, Redirect, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useParams, useRoutes } from 'react-router-dom';
 
 function App() {
+  const routes = useRoutes([
+    {
+      path: "/",
+      element: <HomePage />
+    }, {
+      path: "users",
+      element: <UsersPage />,
+      children: [{
+        index: true,
+        element: <UserListPage />
+      },
+        {
+          path: ":userId",
+          element: <Outlet />,
+          children: [
+            { path: "profile", element: <UserProfilePage /> },
+            { path: "edit", element: <UserEditPage /> },
+            { index: true, element: <Navigate to='./profile'/>  },
+            { path: "*", element: <Navigate to='../profile'/>  },
+          ]
+        }
+      ]
+    },
+    {path: "*", element: <Navigate to='/'/>}
+  ])
   return (
     <div className="App">
       <h1>App page</h1>
-      <BrowserRouter>
-      <NavLink to='/users'>Users list page</NavLink>
-        <Switch>
-          <Route path="/" exact component={HomePage}/>
-          <Route path="/users" component={UsersPage}/>
-          <Redirect to="/"/>
-        </Switch>
-      </BrowserRouter>
+        <NavLink to='/users'>Users list page</NavLink>
+        {routes}
     </div>
   );
 }
@@ -20,31 +39,24 @@ function HomePage (){
   return <h1>HomePage</h1>
 }
 function UsersPage() {
-  const { path } = useRouteMatch()
+  // const { path } = useRouteMatch()
   return (
     <>
       <h1>UsersPage</h1>
       <NavLink to='/'>Home page</NavLink>
-      <div>
-        <Switch>
-          <Route path={path + "/:userId/profile"} component={UserProfilePage} />
-          <Route path={path + "/:userId/edit"} component={UserEditPage} />
-          <Route path={path} exact component={UserListPage} />
-          <Redirect from={path + "/:userId"} to={path+"/:userId/profile"} />
-        </Switch>
-      </div>
+      <Outlet />
     </>
   )
 }
 function UserListPage() {
-  const { path } = useRouteMatch()
+  // const { path } = useRouteMatch()
   const users = ['Jack', 'John', "Mark"]
   return (
     <div>
       <h1>User list page</h1>
       <ul>
         {users.map((user, i) => <li key={i}>
-          <NavLink to={`${path}/${i + 1}`}>{user}</NavLink>
+          <NavLink to={user}>{user}</NavLink>
         </li>)}
       </ul>
     </div>
